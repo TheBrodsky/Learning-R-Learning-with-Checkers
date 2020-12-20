@@ -3,6 +3,7 @@ from enum import Enum
 
 class Cell:
     class CellType(Enum):
+        """Basic enum class used to distinguish game pieces"""
         EMPTY = 0
         RED = 1
         BLACK = 2
@@ -11,6 +12,7 @@ class Cell:
         self.type = init_type
 
     def set_type(self, new_type: CellType):
+        """Changes the CellType of this cell"""
         self.type = new_type
 
     def __str__(self):
