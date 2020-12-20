@@ -28,6 +28,10 @@ class CellTests(ut.TestCase):
         self.cell.set_type(Cell.CellType.BLACK)
         self.assertEqual(str(self.cell), "B")
 
+    def test_IsKinged(self):
+        self.assertFalse(self.cell.is_kinged())
+        self.cell.king()
+        self.assertTrue(self.cell.is_kinged())
 
 if __name__ == "__main__":
     ut.main()

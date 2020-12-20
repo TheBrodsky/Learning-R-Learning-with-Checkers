@@ -10,10 +10,17 @@ class Cell:
 
     def __init__(self, init_type: CellType):
         self.type = init_type
+        self.kinged = False
 
-    def set_type(self, new_type: CellType):
+    def set_type(self, new_type: CellType) -> None:
         """Changes the CellType of this cell"""
         self.type = new_type
+
+    def is_kinged(self):
+        return self.kinged
+
+    def king(self):
+        self.kinged = True
 
     def __str__(self):
         if self.type == self.CellType.EMPTY:

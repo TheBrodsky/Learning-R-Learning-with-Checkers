@@ -1,0 +1,3 @@
+Implement chaining jumps
+Check if any offensive moves are availably globally
+Create turns and turn enforcement
