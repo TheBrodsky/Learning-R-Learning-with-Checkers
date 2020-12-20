@@ -15,12 +15,15 @@ class Board:
 
     def _build_board(self):
         self.board = []
-        row = []
-        for col in range(self.dim):
-            row.append(Cell())
-
-        for r in range(self.dim):
-            self.board.append(row)
+        for row in range(self.dim):
+            self.board.append([])
+            for col in range(self.dim):
+                if 3 <= row <= 4 or (row + col) % 2 == 0:
+                    self.board[row].append(Cell(Cell.CellType.EMPTY))
+                elif row < 3:
+                    self.board[row].append(Cell(Cell.CellType.BLACK))
+                else:
+                    self.board[row].append(Cell(Cell.CellType.RED))
 
 
 if __name__ == "__main__":

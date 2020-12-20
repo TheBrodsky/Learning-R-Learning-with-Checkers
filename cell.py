@@ -7,8 +7,8 @@ class Cell:
         RED = 1
         BLACK = 2
 
-    def __init__(self):
-        self.type = self.CellType.EMPTY
+    def __init__(self, init_type: CellType):
+        self.type = init_type
 
     def set_type(self, new_type: CellType):
         self.type = new_type
