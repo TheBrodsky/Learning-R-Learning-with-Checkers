@@ -30,19 +30,40 @@ class Board:
         else:
             cell.king()
 
-    def move(self, row: int, col: int, new_row: int, new_col: int) -> None:
-        """Swaps two specified cells, unless that move is a jump"""
+    def move(self, row: int, col: int, new_row: int, new_col: int) -> bool:
+        """Swaps cells or jumps cell. Assumes move is valid. Returns true if subsequent jump is possible"""
         from_cell = self.get_cell(row, col)
         to_cell = self.get_cell(new_row, new_col)
 
-        if abs(new_row - row) == 1 and abs(new_col - col) == 1:  # moving a single space, which is a normal move
-            self.board[row][col], self.board[new_row][new_col] = to_cell, from_cell
+        if to_cell.type == Cell.CellType.EMPTY:  # moving to empty space, which is a normal move
             to_cell.set_coords(row, col)
             from_cell.set_coords(new_row, new_col)
+            self.board[row][col], self.board[new_row][new_col] = to_cell, from_cell
+            return False
 
-        else:  # moving more than a single space, which is a jump
-            pass
-            # REMINDER: change coords of pieces moved
+        else:  # 'moving' to nonempty space
+            # Assumptions: space is occupied by enemy piece; enemy piece has empty space 'behind' it
+            # These assumptions are not enforced by Board, but by Game
+
+            # remove jumped piece from corresponding side
+            if from_cell.type == Cell.CellType.RED:
+                self.black_pieces.remove(to_cell)
+            else:
+                self.red_pieces.remove(to_cell)
+            to_cell.set_type(Cell.CellType.EMPTY)  # set piece to empty space
+
+            # get space being jumped to
+            jump_row = (2 * new_row) - row  # row this piece would jump to
+            jump_col = (2 * new_col) - col  # col this piece would jump to
+            to_cell = self.get_cell(jump_row, jump_col)  # empty space being jumped to
+
+            # swap spaces
+            to_cell.set_coords(row, col)
+            from_cell.set_coords(jump_row, jump_col)
+            self.board[row][col], self.board[jump_row][jump_col] = to_cell, from_cell
+
+            # check for subsequent jump
+            return self._get_valid_moves(jump_row, jump_col)[0]
 
     def get_all_valid_moves(self, color: Cell.CellType) -> {(int, int): set}:
         """Returns a dictionary of sets with all possible moves for a given player"""
@@ -140,4 +161,8 @@ if __name__ == "__main__":
     board = Board()
     board.show()
     board.move(5, 0, 4, 1)
+    board.show()
+    board.move(2, 1, 3, 2)
+    board.show()
+    board.move(3, 2, 4, 1)
     board.show()
