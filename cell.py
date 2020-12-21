@@ -8,9 +8,19 @@ class Cell:
         RED = 1
         BLACK = 2
 
-    def __init__(self, init_type: CellType):
+    def __init__(self, init_type: CellType, row: int, col: int):
         self.type = init_type
+        self.row = row
+        self.col = col
         self.kinged = False
+
+    def get_coords(self) -> (int, int):
+        return self.row, self.col
+
+    def set_coords(self, row: int, col: int) -> None:
+        """Changes the row and col of this cell"""
+        self.row = row
+        self.col = col
 
     def set_type(self, new_type: CellType) -> None:
         """Changes the CellType of this cell"""

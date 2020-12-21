@@ -3,8 +3,10 @@ from cell import Cell
 
 class Board:
     def __init__(self):
-        self.dim = 8  # while it may be possible to change this value, it's not recommended
+        self.dim = 8  # changing this may have unpredictable results and cause tests to fail
         self.board = []
+        self.red_pieces = set()  # used for quick iteration over game pieces rather than over whole board
+        self.black_pieces = set()
         self._build_board()
 
     def show(self) -> None:
@@ -29,31 +31,49 @@ class Board:
             cell.king()
 
     def move(self, row: int, col: int, new_row: int, new_col: int) -> None:
-        """Swaps two specified cells, unless that move is a jump or is invalid"""
-        if self._is_valid_move(row, col, new_row, new_col):
-            from_cell = self.get_cell(row, col)
-            to_cell = self.get_cell(new_row, new_col)
+        """Swaps two specified cells, unless that move is a jump"""
+        from_cell = self.get_cell(row, col)
+        to_cell = self.get_cell(new_row, new_col)
 
-            if to_cell.type == Cell.CellType.EMPTY:  # moving to empty space, just swap
-                self.board[row][col], self.board[new_row][new_col] = to_cell, from_cell
-            else:  # jumping enemy piece
-                pass
+        if abs(new_row - row) == 1 and abs(new_col - col) == 1:  # moving a single space, which is a normal move
+            self.board[row][col], self.board[new_row][new_col] = to_cell, from_cell
+            to_cell.set_coords(row, col)
+            from_cell.set_coords(new_row, new_col)
 
-        else:
-            print("Invalid move!")
+        else:  # moving more than a single space, which is a jump
+            pass
+            # REMINDER: change coords of pieces moved
+
+    def get_all_valid_moves(self, color: Cell.CellType) -> {(int, int): set}:
+        """Returns a dictionary of sets with all possible moves for a given player"""
+        can_jump = False
+        all_moves = {}
+        pieces = self.red_pieces if color == Cell.CellType.RED else self.black_pieces
+        for piece in pieces:
+            jump, moves = self._get_valid_moves(*piece.get_coords())
+            if not can_jump:
+                if jump:
+                    # at least 1 jump found; all non-jump moves must be removed and future moves must be jumps
+                    can_jump = True  # ensure future moves are only jumps
+                    all_moves = {piece.get_coords: moves}  # remove non-jump moves; add newly-discovered jumps
+                else:
+                    # no jumps yet found; add all moves
+                    all_moves[piece.get_coords()] = moves
+            else:
+                if jump:
+                    # since can_jump is true, only jumps are added. Non-jumps are ignored
+                    all_moves[piece.get_coords()] = moves
+
+        return can_jump, all_moves
 
     # =================
     # Private Functions
     # =================
-    def _is_valid_move(self, row: int, col: int, new_row: int, new_col: int) -> bool:
-        """Checks the validity of a move"""
-        return (new_row, new_col) in self._get_valid_moves(row, col)
-
-    def _get_valid_moves(self, row: int, col: int) -> set:
+    def _get_valid_moves(self, row: int, col: int) -> (bool, set):
         """Returns a set containing coords of available moves for a given cell. Empty set if cell is empty"""
         cell = self.get_cell(row, col)
-        passive_moves = set()  # moves to empty spaces. Can only be made if no offensive moves are available
-        offensive_moves = set()  # moves which jump an enemy piece
+        moves = set()  # moves to empty spaces. Can only be made if no offensive moves are available
+        jumps = set()  # moves which jump an enemy piece
         if cell.type == Cell.CellType.EMPTY:
             # empty cells can't move
             return set()
@@ -70,7 +90,7 @@ class Board:
                 # Filters out moves related to occupied spaces
                 target_cell = self.get_cell(*diag_coord)
                 if target_cell.type == Cell.CellType.EMPTY:  # empty cells can be moved into at this point
-                    passive_moves.add(diag_coord)  # VALID MOVE: space is empty
+                    moves.add(diag_coord)  # VALID MOVE: space is empty
                     continue
                 elif target_cell.type == cell.type:  # friendly pieces cannot be jumped
                     continue
@@ -80,10 +100,11 @@ class Board:
                     jump_col = (2 * diag_coord[1]) - col  # the col this piece would jump to
                     jump_cell = self.get_cell(jump_row, jump_col)
                     if jump_cell.type == Cell.CellType.EMPTY:
-                        offensive_moves.add(diag_coord)  # VALID MOVE: enemy piece can be jumped
+                        jumps.add(diag_coord)  # VALID MOVE: enemy piece can be jumped
 
             # only return passive moves if there are no available offensive moves
-            return offensive_moves if offensive_moves else passive_moves
+            can_jump = bool(jumps)
+            return can_jump, jumps if can_jump else moves
 
     def _is_backward_movement(self, cell: Cell, row: int, new_row: int):
         """Returns a True is a given cell would be moving backwards to 'new_row', False otherwise"""
@@ -103,12 +124,16 @@ class Board:
         for row in range(self.dim):
             self.board.append([])
             for col in range(self.dim):
-                if 3 <= row <= 4 or (row + col) % 2 == 0:
-                    self.board[row].append(Cell(Cell.CellType.EMPTY))
+                if 3 <= row <= 4 or (row + col) % 2 == 0:  # middle rows are empty; every other square is empty
+                    self.board[row].append(Cell(Cell.CellType.EMPTY, row, col))
                 elif row < 3:
-                    self.board[row].append(Cell(Cell.CellType.BLACK))
+                    cell = Cell(Cell.CellType.BLACK, row, col)
+                    self.board[row].append(cell)
+                    self.black_pieces.add(cell)
                 else:
-                    self.board[row].append(Cell(Cell.CellType.RED))
+                    cell = Cell(Cell.CellType.RED, row, col)
+                    self.board[row].append(cell)
+                    self.red_pieces.add(cell)
 
 
 if __name__ == "__main__":
