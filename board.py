@@ -11,8 +11,13 @@ class Board:
 
     def show(self) -> None:
         """Prints a textual representation of the board"""
-        for row in self.board:
-            print("|", end='')
+        print(" " * 3, end='')
+        for c in range(self.dim):
+            print(f" {c} ", end='')
+        print()
+
+        for r, row in enumerate(self.board):
+            print(f"{r} |", end='')
             for cell in row:
                 print("[" + str(cell) + "]", end='')
             print("|")
@@ -30,8 +35,9 @@ class Board:
         else:
             cell.king()
 
-    def move(self, row: int, col: int, new_row: int, new_col: int) -> bool:
-        """Swaps cells or jumps cell. Assumes move is valid. Returns true if subsequent jump is possible"""
+    def move(self, row: int, col: int, new_row: int, new_col: int) -> (bool, (int, int), set):
+        """Swaps cells or jumps cell. Assumes move is valid. Returns 3 things:
+        True or False is subsequent jump is available; row and col of moved piece; set of moves for moved piece"""
         from_cell = self.get_cell(row, col)
         to_cell = self.get_cell(new_row, new_col)
 
@@ -39,7 +45,7 @@ class Board:
             to_cell.set_coords(row, col)
             from_cell.set_coords(new_row, new_col)
             self.board[row][col], self.board[new_row][new_col] = to_cell, from_cell
-            return False
+            return False, (new_row, new_col), None
 
         else:  # 'moving' to nonempty space
             # Assumptions: space is occupied by enemy piece; enemy piece has empty space 'behind' it
@@ -63,7 +69,8 @@ class Board:
             self.board[row][col], self.board[jump_row][jump_col] = to_cell, from_cell
 
             # check for subsequent jump
-            return self._get_valid_moves(jump_row, jump_col)[0]
+            can_jump, jumps = self._get_valid_moves(jump_row, jump_col)
+            return can_jump, (jump_row, jump_col), jumps
 
     def get_all_valid_moves(self, color: Cell.CellType) -> {(int, int): set}:
         """Returns a dictionary of sets with all possible moves for a given player"""
@@ -78,7 +85,7 @@ class Board:
                     can_jump = True  # ensure future moves are only jumps
                     all_moves = {piece.get_coords: moves}  # remove non-jump moves; add newly-discovered jumps
                 else:
-                    # no jumps yet found; add all moves
+                    # no jumps yet found; add all valid moves
                     all_moves[piece.get_coords()] = moves
             else:
                 if jump:
