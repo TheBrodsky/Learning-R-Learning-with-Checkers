@@ -27,8 +27,10 @@ class Game:
                     can_jump, coords, jumps = self.board.move(row, col, new_row, new_col)
                     if can_jump:
                         self.jump_chain(*coords, jumps)
+                        self.check_king(cell)
                         return True
                     else:
+                        self.check_king(cell)
                         return True
                 else:
                     print("Invalid move: Selected piece cannot make that move")
@@ -49,6 +51,7 @@ class Game:
         can_jump = True
         while can_jump:
             try:
+                self.board.show()
                 newrow, newcol = input(f"Subsequent jump available. Choose which piece to take: {str(jumps)}").split()
                 newrow, newcol = int(newrow), int(newcol)
                 if (newrow, newcol) in jumps:
@@ -59,6 +62,14 @@ class Game:
             except ValueError:
                 print("Invalid move: Syntax incorrect, please input move as 'row, col'")
 
+    def check_king(self, cell: Cell) -> None:
+        """Checks if a given cell should be kinged"""
+        if cell.type == Cell.CellType.RED:
+            if cell.get_coords()[0] == 0:
+                cell.king()
+        else:
+            if cell.get_coords()[0] == self.board.dim:
+                cell.king()
 
     def game_loop(self, starting_color: Cell.CellType) -> None:
         """The core game loop. Once called, runs until the current game ends."""
@@ -68,6 +79,8 @@ class Game:
         while not self.is_game_finished():
             turn_str = "RED" if self.cur_turn == Cell.CellType.RED else "BLACK"
             try:
+                print(self.cur_moves)
+                self.board.show()
                 row, col, newrow, newcol = input(f"{turn_str}'s turn: ").split()
                 if self.move(int(row), int(col), int(newrow), int(newcol)):
                     # a valid move was given, change turns
