@@ -1,5 +1,6 @@
 from board import Board
 from cell import Cell
+from random import choice
 
 
 class Game:
@@ -7,6 +8,10 @@ class Game:
         self.board = Board()
         self.cur_turn = None
         self.cur_moves = {}
+
+    def random_turn(self) -> None:
+        self.cur_turn = choice([Cell.CellType.RED, Cell.CellType.BLACK])
+        self.cur_moves = self.board.get_all_valid_moves(self.cur_turn)
 
     def step(self) -> None:
         """Changes turn and updates"""
@@ -92,6 +97,11 @@ class Game:
 
             except ValueError:
                 print("Invalid move: Syntax incorrect, please input move as 'row, col, new_row, new_col'")
+
+    def do_turn(self, row: int, col: int, new_row: int, new_col: int) -> None:
+        """Like game_loop but only a single loop. Used for the UI, which needs to step through turn by turn."""
+        if self.move(row, col, new_row, new_col):
+            self.step()
 
     def is_game_finished(self):
         return len(self.board.red_pieces) == 0 or len(self.board.black_pieces) == 0

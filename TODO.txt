@@ -1,3 +1,19 @@
-Implement chaining jumps
-Check if any offensive moves are availably globally
-Create turns and turn enforcement
+Checkers:
+=========
+debugging
+
+MiniMax Algo:
+=============
+Scoring func
+Recursive tree
+
+GUI (maybe):
+===============
+kinging (and showing kinged piece)
+chain jumping (currently attempts to use text UI)
+
+
+Reinforcement Learning:
+=======================
+learn how this works
+train against minimax algo
