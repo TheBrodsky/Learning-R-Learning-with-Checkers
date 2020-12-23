@@ -1,6 +1,6 @@
 import unittest as ut
-from board import Board
-from cell import Cell
+from Environment.board import Board
+from Environment.cell import Cell
 
 
 class BoardTests(ut.TestCase):

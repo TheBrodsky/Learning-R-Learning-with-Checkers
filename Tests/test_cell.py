@@ -1,5 +1,5 @@
 import unittest as ut
-from cell import Cell
+from Environment.cell import Cell
 
 
 class CellTests(ut.TestCase):
@@ -20,13 +20,6 @@ class CellTests(ut.TestCase):
         self.assertEqual(self.cell.type, Cell.CellType.BLACK)
         self.cell.set_type(Cell.CellType.EMPTY)
         self.assertEqual(self.cell.type, Cell.CellType.EMPTY)
-
-    def test_CellToString(self):
-        self.assertEqual(str(self.cell), " ")
-        self.cell.set_type(Cell.CellType.RED)
-        self.assertEqual(str(self.cell), "R")
-        self.cell.set_type(Cell.CellType.BLACK)
-        self.assertEqual(str(self.cell), "B")
 
     def test_IsKinged(self):
         self.assertFalse(self.cell.is_kinged())
