@@ -83,7 +83,7 @@ class Board:
                 if jump:
                     # at least 1 jump found; all non-jump moves must be removed and future moves must be jumps
                     can_jump = True  # ensure future moves are only jumps
-                    all_moves = {piece.get_coords: moves}  # remove non-jump moves; add newly-discovered jumps
+                    all_moves = {piece.get_coords(): moves}  # remove non-jump moves; add newly-discovered jumps
                 else:
                     # no jumps yet found; add all valid moves
                     all_moves[piece.get_coords()] = moves
@@ -92,7 +92,7 @@ class Board:
                     # since can_jump is true, only jumps are added. Non-jumps are ignored
                     all_moves[piece.get_coords()] = moves
 
-        return can_jump, all_moves
+        return all_moves
 
     # =================
     # Private Functions
@@ -107,8 +107,8 @@ class Board:
             return set()
         else:
             for diag_coord in self._get_diagonal_cells(row, col):
-                # Filters out negatively indexed moves (they're outside the board)
-                if diag_coord[0] < 0 or diag_coord[1] < 0:
+                # Filters out cells outside board
+                if not 0 <= diag_coord[0] < self.dim or not 0 <= diag_coord[1] < self.dim:
                     continue
 
                 # Filters out backwards movement for unkinged pieces
@@ -126,9 +126,10 @@ class Board:
                     # check if enemy space can be jumped
                     jump_row = (2 * diag_coord[0]) - row  # the row this piece would jump to
                     jump_col = (2 * diag_coord[1]) - col  # the col this piece would jump to
-                    jump_cell = self.get_cell(jump_row, jump_col)
-                    if jump_cell.type == Cell.CellType.EMPTY:
-                        jumps.add(diag_coord)  # VALID MOVE: enemy piece can be jumped
+                    if 0 <= jump_row < self.dim and 0 <= jump_col < self.dim:  # cell being jumped to is within board
+                        jump_cell = self.get_cell(jump_row, jump_col)
+                        if jump_cell.type == Cell.CellType.EMPTY:
+                            jumps.add(diag_coord)  # VALID MOVE: enemy piece can be jumped
 
             # only return passive moves if there are no available offensive moves
             can_jump = bool(jumps)
@@ -162,14 +163,3 @@ class Board:
                     cell = Cell(Cell.CellType.RED, row, col)
                     self.board[row].append(cell)
                     self.red_pieces.add(cell)
-
-
-if __name__ == "__main__":
-    board = Board()
-    board.show()
-    board.move(5, 0, 4, 1)
-    board.show()
-    board.move(2, 1, 3, 2)
-    board.show()
-    board.move(3, 2, 4, 1)
-    board.show()
